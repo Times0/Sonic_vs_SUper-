@@ -93,6 +93,7 @@ class Game:
     def reset(self):
         self.__init__(self.win)
 
+
 class MenuInGame:
     def __init__(self, target, game):
         self.is_open = False
@@ -101,13 +102,13 @@ class MenuInGame:
 
         font = pygame.font.SysFont("None", 70)
         font2 = pygame.font.SysFont("None", 50)
-        self.btn_quit = button.ButtonText(WHITE, pygame.quit, "QUIT", font, 5, font_color=BLACK)
+        self.btn_quit = button.ButtonText(WHITE, exit, "QUIT", font, 5, font_color=BLACK)
         self.btn_restart = button.ButtonText(WHITE, self.start_new_game, "RESTART", font2, 5, font_color=BLACK)
 
         self.x = -1
         self.y = -1
         self.w = 200
-        self.h = 400
+        self.h = 200
         self.surface = pygame.surface.Surface((self.w, self.h), pygame.SRCALPHA)
         self.surface.fill(BROWN)
         self.surface.set_alpha(200)
@@ -146,6 +147,15 @@ img_sonic = pygame.transform.scale_by(img_sonic, 2)
 ssonic_height = img_ssonic.get_height()
 sonic_height = img_sonic.get_height()
 
+imgs_sonic = images.sonic["idle"][:]
+for i, img in enumerate(imgs_sonic):
+    imgs_sonic[i] = pygame.transform.scale_by(img, 2)
+
+imgs_ssonic = images.super_sonic["idle"][:]
+for i, img in enumerate(imgs_ssonic):
+    imgs_ssonic[i] = pygame.transform.scale_by(img, 2)
+    imgs_ssonic[i] = pygame.transform.flip(imgs_ssonic[i], True, False)
+
 
 class Menu:
     def __init__(self, win, game: Game):
@@ -154,12 +164,23 @@ class Menu:
         self.game = game
         font = pygame.font.SysFont("None", 100)
         self.btn_play = button.ButtonText(GREEN, self.start_game, "PLAY", font, 5, font_color=BLACK)
+        self.time_since_last_anim = 0
+        self.index_anim = 0
 
     def run(self):
         clock = pygame.time.Clock()
         while self.menu_is_on:
+            dt = clock.tick(FPS)
             self.events()
+            self.update(dt)
             self.draw(self.win)
+
+    def update(self, dt):
+        self.time_since_last_anim += dt
+        if self.time_since_last_anim >= 150:
+            self.index_anim += 1
+            self.time_since_last_anim = 0
+            self.index_anim %= len(imgs_sonic)
 
     def events(self):
         events = pygame.event.get()
@@ -172,8 +193,8 @@ class Menu:
         x = WIDTH / 2 - self.btn_play.rect.w / 2
         y = HEIGHT / 2 - self.btn_play.rect.h / 2 + 200
         win.blit(images.menu_bg, (0, 0))
-        win.blit(img_sonic, (200, HEIGHT / 2 - sonic_height / 2))
-        win.blit(img_ssonic, (WIDTH - 400, HEIGHT / 2 - ssonic_height / 2))
+        win.blit(imgs_sonic[self.index_anim], (200, HEIGHT / 2 - sonic_height / 2))
+        win.blit(imgs_ssonic[self.index_anim], (WIDTH - 400, HEIGHT / 2 - ssonic_height / 2))
 
         self.btn_play.draw(win, x, y)
         pygame.display.flip()

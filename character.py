@@ -11,6 +11,9 @@ class Fighter(pygame.sprite.Sprite):
         self.speed = 10
         self.orientation = ""
 
+        self.time_since_last_attack = 0
+        self.Cooldown =700
+
         self.time_since_last_frame_change = 0
         self.anim_index = 0
 
@@ -52,6 +55,8 @@ class Fighter(pygame.sprite.Sprite):
             else:
                 self.rect = self.image.get_rect(topright=self.rect.topright)
 
+        self.time_since_last_attack += dt
+
     def add_ennemy(self, ennemy):
         self.ennemy = ennemy
 
@@ -76,10 +81,12 @@ class Fighter(pygame.sprite.Sprite):
 
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key == binds["punch"]:
+                if event.key == binds["punch"] and self.time_since_last_attack >= self.Cooldown:
                     self.attack("punch")
-                if event.key == binds["kick"]:
+                    self.time_since_last_attack = 0
+                if event.key == binds["kick"] and self.time_since_last_attack >= self.Cooldown:
                     self.attack("kick")
+                    self.time_since_last_attack = 0
         if not moving and self.status == "run":
             self.change_status_to("idle")
 
@@ -101,7 +108,7 @@ class Fighter(pygame.sprite.Sprite):
         if self.pv <= 0:
             self.is_alive = False
 
-    def draw(self, win, debug=True):
+    def draw(self, win, debug=False):
         win.blit(self.image, self.rect)
         x = self.rect.x + (self.rect.w - self.max_pv) // 2
         pygame.draw.rect(win, RED, (x, self.rect.y - 50, self.max_pv, 30))
