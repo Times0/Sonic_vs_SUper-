@@ -25,18 +25,7 @@ class Fighter(pygame.sprite.Sprite):
         self.ennemy = None
         self.binds = bindings
 
-    def draw(self, win):
-        win.blit(self.image, self.rect)
-        pygame.draw.rect(win, RED, self.rect, 3)
-        x = self.rect.x + (self.rect.w - self.max_pv) // 2
-        pygame.draw.rect(win, RED, (x, self.rect.y - 50, self.max_pv, 30))
-        pygame.draw.rect(win, GREEN, (x, self.rect.y - 50, self.pv, 30))
-        pygame.draw.rect(win, BLACK, (x, self.rect.y - 50, self.max_pv, 30), 3)
-
-        # draw status on top of character
-        font = pygame.font.SysFont("None", 40)
-        text = font.render(self.status, True, BLACK)
-        win.blit(text, (self.rect.x, self.rect.y - 100))
+        self.is_alive = True
 
     def change_status_to(self, new_status):
         if new_status != self.status:
@@ -52,10 +41,16 @@ class Fighter(pygame.sprite.Sprite):
                 self.anim_index = 0
                 if self.status == "punch":
                     self.change_status_to("idle")
+                if self.status == "kick":
+                    self.change_status_to("idle")
             self.image = self.imgs[self.status][self.anim_index]
             if self.orientation == "left":
                 self.image = pygame.transform.flip(self.image, True, False)
-            self.rect = self.image.get_rect(topleft=self.rect.topleft)
+
+            if self.orientation == "right":
+                self.rect = self.image.get_rect(topleft=self.rect.topleft)
+            else:
+                self.rect = self.image.get_rect(topright=self.rect.topright)
 
     def add_ennemy(self, ennemy):
         self.ennemy = ennemy
@@ -83,6 +78,8 @@ class Fighter(pygame.sprite.Sprite):
             if event.type == pygame.KEYDOWN:
                 if event.key == binds["punch"]:
                     self.punch()
+                if event.key == binds["kick"]:
+                    self.kick()
         if not moving and self.status == "run":
             self.change_status_to("idle")
 
@@ -90,7 +87,38 @@ class Fighter(pygame.sprite.Sprite):
         self.change_status_to("punch")
         collide = pygame.Rect.colliderect(self.rect, self.ennemy.rect)
         if collide:
-            self.ennemy.pv -= 10
+            self.ennemy.take_dmg(10)
+
+    def kick(self):
+        self.change_status_to("kick")
+        collide = pygame.Rect.colliderect(self.rect, self.ennemy.rect)
+        if collide:
+            self.ennemy.take_dmg(20)
+
+    def take_dmg(self, dmg):
+        self.pv -= dmg
+        if self.pv == 0:
+            self.is_alive = False
+        if self.pv <= 0:
+            self.is_alive = False
+
+
+    def draw(self, win, debug=False):
+        win.blit(self.image, self.rect)
+        x = self.rect.x + (self.rect.w - self.max_pv) // 2
+        pygame.draw.rect(win, RED, (x, self.rect.y - 50, self.max_pv, 30))
+        pygame.draw.rect(win, GREEN, (x, self.rect.y - 50, self.pv, 30))
+        pygame.draw.rect(win, BLACK, (x, self.rect.y - 50, self.max_pv, 30), 3)
+
+
+
+        if debug:
+            pygame.draw.rect(win, RED, self.rect, 3)
+
+            # draw status on top of character
+            font = pygame.font.SysFont("None", 40)
+            text = font.render(self.status, True, BLACK)
+            win.blit(text, (self.rect.x, self.rect.y - 100))
 
 
 class Sonic(Fighter):

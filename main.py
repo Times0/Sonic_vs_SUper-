@@ -1,5 +1,7 @@
-import pygame
 import ctypes
+
+import pygame
+
 from constants import *
 
 # set dpi aware
@@ -9,7 +11,7 @@ if __name__ == "__main__":
     pygame.init()
     pygame.display.set_caption("sonic vs super sonic")
     win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
-    from game import Game
+    from game import Game, Menu
 
-    game = Game(win)
-    game.run()
+    start_menu = Menu(win, Game(win))
+    start_menu.run()

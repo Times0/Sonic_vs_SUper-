@@ -26,7 +26,7 @@ if __name__ == "__main__":
     pygame.init()
     pygame.display.set_mode((1, 1))
 
-    crop_image("assets/super_sonic.png",0 , 327, 59, 40, "assets/characters/super_sonic/kick/kick2.png")
+    crop_image("assets/super_sonic.png", 0, 327, 59, 40, "assets/characters/super_sonic/kick/kick2.png")
 
 
 def load_image(path, size=None):
@@ -40,7 +40,6 @@ def split_image_horizontally(img, parts):
     width = img.get_width()
     height = img.get_height()
     part_width = width // parts
-    print(f"width is {part_width} for {parts}")
     part_height = height
     images = []
     for i in range(parts):
@@ -54,13 +53,15 @@ def split_image_horizontally(img, parts):
 nb_img_ssonic = {
     "idle": 6,
     "run": 4,
-    "punch":6,
+    "punch": 6,
+    "kick": 9,
 }
 
 nb_img_sonic = {
     "idle": 6,
     "run": 9,
-    "punch":6,
+    "punch": 6,
+    "kick": 9,
 }
 
 folders = list(nb_img_sonic.keys())
@@ -80,3 +81,8 @@ def load_character_images(path, nb_img) -> dict:
 
 sonic = load_character_images(os.path.join("assets", "characters", "sonic"), nb_img_sonic)
 super_sonic = load_character_images(os.path.join("assets", "characters", "super_sonic"), nb_img_ssonic)
+
+menu_bg = load_image("assets/img.png")
+menu_bg = pygame.transform.scale(menu_bg, (WIDTH, HEIGHT))
+
+menu_icon = load_image("assets/icon.png", (75, 75))
