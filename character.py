@@ -77,23 +77,22 @@ class Fighter(pygame.sprite.Sprite):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == binds["punch"]:
-                    self.punch()
+                    self.attack("punch")
                 if event.key == binds["kick"]:
-                    self.kick()
+                    self.attack("kick")
         if not moving and self.status == "run":
             self.change_status_to("idle")
 
-    def punch(self):
-        self.change_status_to("punch")
-        collide = pygame.Rect.colliderect(self.rect, self.ennemy.rect)
-        if collide:
-            self.ennemy.take_dmg(10)
+    def attack(self, attack_type: str):
+        self.change_status_to(attack_type)
+        if self.orientation == "right":
+            punch_rect = pygame.Rect(self.rect.x + self.rect.w, self.rect.y, 100, self.rect.h)
+        else:
+            punch_rect = pygame.Rect(self.rect.x - 100, self.rect.y, 100, self.rect.h)
 
-    def kick(self):
-        self.change_status_to("kick")
-        collide = pygame.Rect.colliderect(self.rect, self.ennemy.rect)
+        collide = pygame.Rect.colliderect(punch_rect, self.ennemy.rect)
         if collide:
-            self.ennemy.take_dmg(20)
+            self.ennemy.take_dmg(10 if attack_type == "punch" else 20 if attack_type == "kick" else 0)
 
     def take_dmg(self, dmg):
         self.pv -= dmg
@@ -102,15 +101,12 @@ class Fighter(pygame.sprite.Sprite):
         if self.pv <= 0:
             self.is_alive = False
 
-
-    def draw(self, win, debug=False):
+    def draw(self, win, debug=True):
         win.blit(self.image, self.rect)
         x = self.rect.x + (self.rect.w - self.max_pv) // 2
         pygame.draw.rect(win, RED, (x, self.rect.y - 50, self.max_pv, 30))
         pygame.draw.rect(win, GREEN, (x, self.rect.y - 50, self.pv, 30))
         pygame.draw.rect(win, BLACK, (x, self.rect.y - 50, self.max_pv, 30), 3)
-
-
 
         if debug:
             pygame.draw.rect(win, RED, self.rect, 3)
@@ -119,6 +115,13 @@ class Fighter(pygame.sprite.Sprite):
             font = pygame.font.SysFont("None", 40)
             text = font.render(self.status, True, BLACK)
             win.blit(text, (self.rect.x, self.rect.y - 100))
+
+            if self.status == "punch" or self.status == "kick":
+                if self.orientation == "right":
+                    punch_rect = pygame.Rect(self.rect.x + self.rect.w, self.rect.y, 100, self.rect.h)
+                else:
+                    punch_rect = pygame.Rect(self.rect.x - 100, self.rect.y, 100, self.rect.h)
+                pygame.draw.rect(win, RED, punch_rect, 3)
 
 
 class Sonic(Fighter):
